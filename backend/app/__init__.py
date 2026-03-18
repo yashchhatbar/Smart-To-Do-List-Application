@@ -30,7 +30,7 @@ def create_app(config_class=Config):
 
         # 🔥 AUTO CREATE ADMIN (ONLY FIRST TIME)
         admin_email = "yashchhatbar11@gmail.com"
-        admin_password = "admin123"
+        admin_password = "yash@2411"
 
         existing_admin = User.query.filter_by(email=admin_email).first()
 
