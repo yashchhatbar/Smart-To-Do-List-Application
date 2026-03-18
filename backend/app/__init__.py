@@ -1,9 +1,10 @@
 from flask import Flask
 from marshmallow import ValidationError
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from flask_cors import CORS
 
 from config import Config
-from extensions import bcrypt, cors, db, migrate
+from extensions import bcrypt, db, migrate
 from models import ActivityLog, Task, User
 from routes.admin import admin_bp
 from routes.auth import auth_bp
@@ -20,12 +21,7 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
 
     configure_logging(app)
-    @app.after_request
-    def after_request(response):
-        response.headers["Access-Control-Allow-Origin"] = "http://localhost:3000"
-        response.headers["Access-Control-Allow-Headers"] = "Content-Type,Authorization"
-        response.headers["Access-Control-Allow-Methods"] = "GET,POST,PUT,DELETE,OPTIONS"
-        return response
+
     register_extensions(app)
     register_blueprints(app)
     register_error_handlers(app)
@@ -43,15 +39,13 @@ def register_extensions(app):
     db.init_app(app)
     migrate.init_app(app, db)
     bcrypt.init_app(app)
-    cors.init_app(
+
+    # ✅ FIXED CORS (PRODUCTION READY)
+    CORS(
         app,
-        resources={
-            r"/api/*": {
-                "origins": ["http://localhost:3000"],
-                "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-                "allow_headers": ["Content-Type", "Authorization"],
-            }
-        },
+        resources={r"/api/*": {"origins": app.config["CORS_ORIGINS"]}},
+        allow_headers=["Content-Type", "Authorization"],
+        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         supports_credentials=True,
     )
 
