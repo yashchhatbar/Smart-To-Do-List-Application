@@ -24,9 +24,28 @@ def create_app(config_class=Config):
 
     register_extensions(app)
 
-    # ✅ IMPORTANT FIX: Auto-create tables (bypass broken migrations)
+    # ✅ AUTO CREATE TABLES + ADMIN USER
     with app.app_context():
         db.create_all()
+
+        # 🔥 AUTO CREATE ADMIN (ONLY FIRST TIME)
+        admin_email = "yashchhatbar11@gmail.com"
+        admin_password = "admin123"
+
+        existing_admin = User.query.filter_by(email=admin_email).first()
+
+        if not existing_admin:
+            hashed_password = bcrypt.generate_password_hash(admin_password).decode("utf-8")
+
+            admin = User(
+                name="Admin",
+                email=admin_email,
+                password=hashed_password,
+                is_admin=True,
+            )
+
+            db.session.add(admin)
+            db.session.commit()
 
     register_blueprints(app)
     register_error_handlers(app)
