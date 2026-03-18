@@ -24,17 +24,21 @@ def create_app(config_class=Config):
 
     register_extensions(app)
 
-    # ✅ AUTO CREATE TABLES + ADMIN USER
+    # ✅ AUTO CREATE TABLES + FIX ADMIN USER
     with app.app_context():
         db.create_all()
 
-        # 🔥 AUTO CREATE ADMIN (ONLY FIRST TIME)
         admin_email = "yashchhatbar11@gmail.com"
         admin_password = "yash@2411"
 
-        existing_admin = User.query.filter_by(email=admin_email).first()
+        user = User.query.filter_by(email=admin_email).first()
 
-        if not existing_admin:
+        if user:
+            # ✅ FORCE MAKE USER ADMIN
+            user.is_admin = True
+            db.session.commit()
+        else:
+            # ✅ CREATE ADMIN USER
             hashed_password = bcrypt.generate_password_hash(admin_password).decode("utf-8")
 
             admin = User(
