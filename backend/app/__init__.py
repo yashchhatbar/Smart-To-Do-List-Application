@@ -23,6 +23,11 @@ def create_app(config_class=Config):
     configure_logging(app)
 
     register_extensions(app)
+
+    # ✅ IMPORTANT FIX: Auto-create tables (bypass broken migrations)
+    with app.app_context():
+        db.create_all()
+
     register_blueprints(app)
     register_error_handlers(app)
 
@@ -40,7 +45,7 @@ def register_extensions(app):
     migrate.init_app(app, db)
     bcrypt.init_app(app)
 
-    # ✅ FIXED CORS (PRODUCTION READY)
+    # ✅ PRODUCTION-READY CORS
     CORS(
         app,
         resources={r"/api/*": {"origins": app.config["CORS_ORIGINS"]}},
